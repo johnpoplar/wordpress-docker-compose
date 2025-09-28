@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   wp:
     image: wordpress:latest # https://hub.docker.com/_/wordpress/
@@ -56,7 +54,7 @@ services:
     ]
     volumes:
       - ./wp-data2:/docker-entrypoint-initdb.d
-      - db_data:/var/lib/mysql
+      - db_data2:/var/lib/mysql
     environment:
       MYSQL_DATABASE: "${DB_NAME}"
       MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
