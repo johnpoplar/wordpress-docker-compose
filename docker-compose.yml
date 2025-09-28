@@ -1,9 +1,11 @@
 services:
   wp:
     image: wordpress:latest # https://hub.docker.com/_/wordpress/
+    ports:
+      - "80:80"
     volumes:
       - ./config/wp_php.ini:/usr/local/etc/php/conf.d/conf.ini
-      - ./wp-app:/var/www/html # Full wordpress project
+      - wp_data:/var/www/html # Full wordpress project
       #- ./plugin-name/trunk/:/var/www/html/wp-content/plugins/plugin-name # Plugin development
       #- ./theme-name/trunk/:/var/www/html/wp-content/themes/theme-name # Theme development
     environment:
@@ -14,14 +16,13 @@ services:
       WORDPRESS_DEBUG: "${WORDPRESS_DEBUG}"
     depends_on:
       - db
-    links:
-      - db
+    restart: unless-stopped
 
   wpcli:
     image: wordpress:cli
     volumes:
       - ./config/wp_php.ini:/usr/local/etc/php/conf.d/conf.ini
-      - ./wp-app:/var/www/html
+      - wp_data:/var/www/html
     environment:
       WORDPRESS_DB_HOST: db
       WORDPRESS_DB_NAME: "${DB_NAME}"
@@ -33,17 +34,20 @@ services:
 
   pma:
     image: phpmyadmin:latest  # https://hub.docker.com/_/phpmyadmin
+    ports:
+      - "8080:80"
     environment:
       # https://docs.phpmyadmin.net/en/latest/setup.html#docker-environment-variables
       PMA_HOST: db
       PMA_PORT: 3306
       MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
       UPLOAD_LIMIT: 50M
-    links:
-      - db:db
+    depends_on:
+      - db
     volumes:
      - ./config/pma_php.ini:/usr/local/etc/php/conf.d/conf.ini
      - ./config/pma_config.php:/etc/phpmyadmin/config.user.inc.php
+    restart: unless-stopped
 
   db:
     image: mysql:latest # https://hub.docker.com/_/mysql/ - or mariadb https://hub.docker.com/_/mariadb
@@ -53,11 +57,14 @@ services:
         '--collation-server=utf8mb4_unicode_ci'
     ]
     volumes:
-      - ./wp-data2:/docker-entrypoint-initdb.d
-      - db_data2:/var/lib/mysql
+      - db_data:/var/lib/mysql
     environment:
       MYSQL_DATABASE: "${DB_NAME}"
       MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_USER: "${DB_USER}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+    restart: unless-stopped
 
 volumes:
-  db_data2:
+  wp_data:
+  db_data:
