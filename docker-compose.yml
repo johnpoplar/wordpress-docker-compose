@@ -2,7 +2,7 @@ services:
   wp:
     image: wordpress:latest # https://hub.docker.com/_/wordpress/
     ports:
-      - "80:80"
+      - "8082:80"
     volumes:
       - ./config/wp_php.ini:/usr/local/etc/php/conf.d/conf.ini
       - wp_data:/var/www/html # Full wordpress project
